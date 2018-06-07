@@ -1,12 +1,16 @@
 import os
 from enum import Enum
 
+import six
 import json
 import requests
 from requests_toolbelt import MultipartEncoder
 
 from pymessenger2 import utils
+from pymessenger2.exceptions import OAuthError, FacebookError 
 from pymessenger2.utils import AttrsEncoder
+
+
 
 DEFAULT_API_VERSION = 2.6
 
@@ -22,7 +26,8 @@ class Bot(object):
                  access_token,
                  api_version=DEFAULT_API_VERSION,
                  app_secret=None,
-                 verification_token=None):
+                 verification_token=None,
+                 raise_exception=False):
         """
             @required:
                 access_token
@@ -35,6 +40,7 @@ class Bot(object):
         self.graph_url = 'https://graph.facebook.com/v{0}'.format(
             self.api_version)
         self.access_token = access_token
+        self.verification_token = verification_token
 
     @property
     def auth_args(self):
@@ -459,15 +465,41 @@ class Bot(object):
         """
         return self.send_attachment_url(recipient_id, "file", file_url,
                                         notification_type)
-
+    
+    def _get_error_params(self, error_obj):
+        error_params = {}
+        error_fields = ['message', 'code', 'error_subcode', 'error_user_msg',
+                        'is_transient', 'error_data', 'error_user_title',
+                        'fbtrace_id']
+        if 'error' in error_obj:
+            error_obj = error_obj['error']
+        for field in error_fields:
+            error_params[field] = error_obj.get(field)
+        return error_params
+    
     def send_raw(self, payload):
         request_endpoint = '{0}/me/messages'.format(self.graph_url)
+        if not six.PY2 and payload.get('notification_type'):
+            payload['notification_type'] = payload['notification_type'].value
         response = requests.post(
             request_endpoint,
             params=self.auth_args,
             data=json.dumps(payload, cls=AttrsEncoder),
             headers={'Content-Type': 'application/json'})
-        result = response.json()
+        data = response.json()
+        if self.raise_exception:
+            if type(data) is dict:
+                if 'error' in data:
+                    error = data['error']
+                    if error.get('type') == "OAuthException":
+                        raise OAuthError(**self._get_error_params(data))
+                    else:
+                        raise FacebookError(**self._get_error_params(data))
+                # Facebook occasionally reports errors in its legacy error format.
+                if 'error_msg' in data:
+                    raise FacebookError(**self._get_error_params(data))
+        return data
+        
         return result
 
     def _send_payload(self, payload):
