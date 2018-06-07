@@ -41,6 +41,7 @@ class Bot(object):
             self.api_version)
         self.access_token = access_token
         self.verification_token = verification_token
+        self.raise_exception=raise_exception
 
     @property
     def auth_args(self):
