@@ -12,6 +12,8 @@ About
 
 This wrapper has the following functions:
 
+Send Message:
+
 -  ``send_text_message(recipient_id, message)``
 -  ``send_message(recipient_id, message)``
 -  ``send_generic_message(recipient_id, elements)``
@@ -29,7 +31,22 @@ This wrapper has the following functions:
 -  ``send_file_url(recipient_id, file_url)``
 -  ``send_action(recipient_id, action)``
 -  ``send_raw(payload)``
+
+Profile Data:
+
 -  ``get_user_info(recipient_id)``
+
+Configurations:
+
+-  ``set_get_started(payload)``
+-  ``set_greeting(payload)``
+-  ``set_home_url(payload)``
+-  ``set_persistent_menu(payload)``
+-  ``set_target_audience(payload)``
+-  ``set_whitelisted_domains(payload)``
+-  ``add_domains_to_whitelist(payload)``
+-  ``send_configuration(payload)``
+-  ``clear_configuration(**payload)``
 
 You can see the code/documentation for there in
 `bot.py <pymessenger/bot.py>`__.
