@@ -21,7 +21,8 @@ class Bot(object):
     def __init__(self,
                  access_token,
                  api_version=DEFAULT_API_VERSION,
-                 app_secret=None):
+                 app_secret=None,
+                 verification_token=None):
         """
             @required:
                 access_token
@@ -45,12 +46,77 @@ class Bot(object):
                 auth['appsecret_proof'] = appsecret_proof
             self._auth_args = auth
         return self._auth_args
-
+    
+    #===========================================================================
+    # Section - CONFIGURATIONS -
+    # https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/
+    #===========================================================================
+    def set_account_linking_url(self, account_linking_url):
+        """ Set Messenger's Account Linking to link user accounts in your bot to the user's Messenger account. 
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/account-linking-url
+        """
+        return self.send_configuration(**{'account_linking_url':account_linking_url})
+    
+    def set_get_started(self, get_started_payload):
+        """ Set the welcome screen shown only the first time the user interacts with the Page on Messenger. 
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/get-started-button
+        """
+        return self.send_configuration(**{'get_started':get_started_payload})
+    
+    def set_greeting(self, greeting_payload):
+        """ Set the greeting message people will see on the welcome screen of your bot. 
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/greeting
+        """
+        return self.send_configuration(**{'greeting':greeting_payload})
+    
+    def set_home_url(self, home_url_payload):
+        """ Set home_url that allows your bot to enable a Chat Extension in the composer drawer in Messenger. 
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/home_url
+        """
+        return self.send_configuration(**{'home_url':home_url_payload})
+    
+    def set_persistent_menu(self, persistent_menu_payload):
+        """ Set the persistent menu for your bot to help people discover and more easily 
+        access your functionality throughout the conversation.
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/persistent-menu
+        """
+        if (not persistent_menu_payload.get('composer_input_disabled',False)
+                and not persistent_menu_payload.get('call_to_actions',[])):
+            raise Exception("call_to_actions is required if composer_input_disabled == True!")
+        return self.send_configuration(**{'persistent_menu':persistent_menu_payload})
+    
+    def set_target_audience(self, target_audience_payload):
+        """ Target Audience allows you to customize the audience that will see your bot in the Discover tab on Messenger. 
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/greeting
+        """
+        return self.send_configuration(**{'target_audience':target_audience_payload})
+    
+    def set_whitelisted_domains(self, whitelisted_domains):
+        """ Set a list of third-party domains that are accessible in the Messenger webview for use with the Messenger Extensions SDK, and for the checkbox plugin.
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/domain-whitelisting
+        """
+        if whitelisted_domains is not None:
+            if whitelisted_domains != '' and not isinstance(whitelisted_domains, (list)):
+                whitelisted_domains = [whitelisted_domains]
+        else:
+            raise Exception("Domains non setted!")
+        return self.send_configuration(**{'whitelisted_domains':whitelisted_domains})
+    
     def add_domains_to_whitelist(self, domains):
-        payload = {
-            "whitelisted_domains": domains
+        warnings.warn("add_domains_to_whitelist is deprecated, please use set_whitelisted_domains")
+        return self.set_whitelisted_domains(domains)
+    
+    def clear_configuration(self, fields=[]):
+        configuration = {
+            'fields':fields or ['whitelisted_domains', 'greeting',
+                                'get_started', 'persistent_menu']
         }
-
+        return self.send_configuration(**configuration)
+    
+    def send_configuration(self, **payload):
+        """ Set Properties that define various aspects of the following Messenger Platform features
+        https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api
+        """
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
         response = requests.post(
             request_endpoint,
@@ -60,6 +126,34 @@ class Bot(object):
         result = response.json()
         return result
 
+    #===========================================================================
+    # Section - Profile Data - 
+    #===========================================================================
+    
+    def get_user_info(self, recipient_id, fields=None):
+        """Getting information about the user
+        https://developers.facebook.com/docs/messenger-platform/user-profile
+        Input:
+          recipient_id: recipient id to send to
+        Output:
+          Response from API as <dict>
+        """
+        params = {}
+        if fields is not None and isinstance(fields, (list, tuple)):
+            params['fields'] = ",".join(fields)
+
+        params.update(self.auth_args)
+
+        request_endpoint = '{0}/{1}'.format(self.graph_url, recipient_id)
+        response = requests.get(request_endpoint, params=params)
+        if response.status_code == 200:
+            return response.json()
+
+        return None
+    
+    #===========================================================================
+    # Section - Send Message - 
+    #===========================================================================
     def send_recipient(self,
                        recipient_id,
                        payload,
@@ -365,27 +459,6 @@ class Bot(object):
         """
         return self.send_attachment_url(recipient_id, "file", file_url,
                                         notification_type)
-
-    def get_user_info(self, recipient_id, fields=None):
-        """Getting information about the user
-        https://developers.facebook.com/docs/messenger-platform/user-profile
-        Input:
-          recipient_id: recipient id to send to
-        Output:
-          Response from API as <dict>
-        """
-        params = {}
-        if fields is not None and isinstance(fields, (list, tuple)):
-            params['fields'] = ",".join(fields)
-
-        params.update(self.auth_args)
-
-        request_endpoint = '{0}/{1}'.format(self.graph_url, recipient_id)
-        response = requests.get(request_endpoint, params=params)
-        if response.status_code == 200:
-            return response.json()
-
-        return None
 
     def send_raw(self, payload):
         request_endpoint = '{0}/me/messages'.format(self.graph_url)
