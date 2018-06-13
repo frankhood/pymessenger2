@@ -199,8 +199,9 @@ ChatBot Configuration:
 Output:
 
 .. figure:: https://user-images.githubusercontent.com/2088831/41346006-895817ee-6f05-11e8-9048-f9a06df3f727.png
-   figure:: https://user-images.githubusercontent.com/2088831/41345991-8111431c-6f05-11e8-9d09-40df3a2a60be.png
-   :alt: Bot Configuration
+   :alt: Persistent Menu
+.. figure:: https://user-images.githubusercontent.com/2088831/41345991-8111431c-6f05-11e8-9d09-40df3a2a60be.png
+   :alt: Persistent Menu
 
    {'data': [{'persistent_menu': [{
           "locale":"default",
