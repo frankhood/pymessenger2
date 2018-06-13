@@ -46,6 +46,7 @@ Configurations:
 -  ``set_whitelisted_domains(payload)``
 -  ``add_domains_to_whitelist(payload)``
 -  ``send_configuration(payload)``
+-  ``get_configuration()``
 -  ``clear_configuration(**payload)``
 
 You can see the code/documentation for there in
@@ -131,10 +132,128 @@ Sending an image/video/file using an URL:
     image_url = "http://url/to/image.png"
     bot.send_image_url(recipient_id, image_url)
 
+
+ChatBot Configuration:
+'''''''''''''''''''''''''''''''''''
+
+    `Messenger Profile API <https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api/>`__
+    allows you to manage congigurations like Persistent Menu, Whitelisted Domain, ecc.
+
+.. code:: python
+
+    from pymessenger2.bot import Bot
+    bot = Bot(<access_token>)
+    bot.set_get_started({"payload":"Hello Friend"})
+    bot.set_whitelisted_domains(["https://www.mywebsite.it",
+                                 "https://katesapp.ngrok.io"])
+    bot.set_greeting([
+          {
+            "locale":"default",
+            "text":"Hello!"
+          }, {
+            "locale":"en_US",
+            "text":"Hi"
+          }, {
+            "locale":"it_IT",
+            "text":"Ciao"
+          }
+    ])
+    bot.set_persistent_menu([{
+          "locale":"default",
+          "composer_input_disabled": False,
+          "call_to_actions":[
+            {
+              "title":"🍽 Recipes",
+              "type":"nested",
+              "call_to_actions":[
+                {
+                  "title":"🐟 Fish Recipes",
+                  "type":"postback",
+                  "payload":"FISH-RECIPES"
+                },
+                {
+                  "title":"🍖 Meat Recipes",
+                  "type":"postback",
+                  "payload":"MEAT-RECIPES"
+                },
+                {
+                  "title":"🍱 Japanese Recipes",
+                  "type":"postback",
+                  "payload":"JAPAN-RECIPES"
+                },
+                {
+                  "title":"🍆 Vegan Recipes",
+                  "type":"postback",
+                  "payload":"VEGAN-RECIPES"
+                },
+              ]
+            },{
+              "title":"🔔 Notifications",
+              "type":"postback",
+              "payload":"NOTIFICATIONS"
+            }
+          ]
+        }])
+    bot.get_configuration()
+                                      
+Output:
+
+.. figure:: https://user-images.githubusercontent.com/2088831/41346006-895817ee-6f05-11e8-9048-f9a06df3f727.png
+   figure:: https://user-images.githubusercontent.com/2088831/41345991-8111431c-6f05-11e8-9d09-40df3a2a60be.png
+   :alt: Bot Configuration
+
+   {'data': [{'persistent_menu': [{
+          "locale":"default",
+          "composer_input_disabled": False,
+          "call_to_actions":[
+            {
+              "title":"🍽 Recipes",
+              "type":"nested",
+              "call_to_actions":[
+                {
+                  "title":"🐟 Fish Recipes",
+                  "type":"postback",
+                  "payload":"FISH-RECIPES"
+                },
+                {
+                  "title":"🍖 Meat Recipes",
+                  "type":"postback",
+                  "payload":"MEAT-RECIPES"
+                },
+                {
+                  "title":"🍱 Japanese Recipes",
+                  "type":"postback",
+                  "payload":"JAPAN-RECIPES"
+                },
+                {
+                  "title":"🍆 Vegan Recipes",
+                  "type":"postback",
+                  "payload":"VEGAN-RECIPES"
+                },
+              ]
+            },{
+              "title":"🔔 Notifications",
+              "type":"postback",
+              "payload":"NOTIFICATIONS"
+            }
+          ]
+        }],
+        'get_started': {'payload': 'Ciao'}, 
+        'greeting': [
+            {'locale': 'default', 'text': 'Hello!'}, 
+            {'locale': 'en_US', 'text': 'Hi'}, 
+            {'locale': 'it_IT', 'text': 'Ciao'}
+        ], 
+        'whitelisted_domains': ["https://www.mywebsite.it",
+                                 "https://katesapp.ngrok.io"]}]}
+
+
 Todo
 ~~~~
 
 -  Structured Messages
+-  Handover Protocol <https://developers.facebook.com/docs/messenger-platform/handover-protocol>
+-  Use Facepy?
 -  Receipt Messages
 -  Airlines
 -  Tests!
