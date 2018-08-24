@@ -521,7 +521,7 @@ class Bot(object):
         """
         return self.send_attachment_url(recipient_id, "file", file_url,
                                         notification_type, do_send=do_send)
-    
+
     def _get_error_params(self, error_obj):
         error_params = {}
         error_fields = ['message', 'code', 'error_subcode', 'error_user_msg',
@@ -578,3 +578,123 @@ class Bot(object):
     def _send_payload(self, payload):
         """ Deprecated, use send_raw instead """
         return self.send_raw(payload)
+
+
+    ####################################
+    ###  HANDOVER PROTOCOL
+    ##########################
+    def pass_thread_control(self, recipient_id,
+                            target_app_id=263902037430900,  # Page inbox
+                            help_message="Pass to Secondary Receiver"):
+        """
+        See  https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
+
+        :param recipient_id: PSID of Faceboook user
+        :param target_app_id: Facebook APP ID
+        :param help_message: String to pass to secondary receiver app
+        :return:
+
+        """
+        payload = {
+            "recipient": {"id": recipient_id},
+            "target_app_id": target_app_id,
+            "metadata": help_message,
+        }
+        """
+        https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
+
+        @TODO Myabe Use facepy.graph_api.GraphAPI for exceptions handler and other shortcuts,
+              and to have an always update service.. if so `auth_args` will be unuseful
+        """
+        request_endpoint = '{0}/me/pass_thread_control'.format(self.graph_url)
+        #=======================================================================
+        # if FACEPY_ENABLED:
+        #     from facepy.graph_api import GraphAPI
+        #     graph = GraphAPI(self.access_token,appsecret=self.app_secret)
+        #     request_data = graph.post(request_endpoint, payload)
+        #=======================================================================
+        request_data = json.dumps(payload, cls=AttrsEncoder)
+        if self.log_request:
+            print("request data to {0}: {1} "
+                  "".format(request_endpoint,
+                            request_data))
+        response = requests.post(
+            request_endpoint,
+            params=self.auth_args,
+            data=json.dumps(payload, cls=AttrsEncoder),
+            headers={'Content-Type': 'application/json'})
+        data = response.json()
+        if self.raise_exception:
+            #ERROR Raise
+            if type(data) is dict:
+                if 'error' in data:
+                    error = data['error']
+                    print("error: {0}".format(error))
+                    if error.get('type') == "OAuthException":
+                        raise OAuthError(**self._get_error_params(data))
+                    else:
+                        raise FacebookError(**self._get_error_params(data))
+                # Facebook occasionally reports errors in its legacy error format.
+                if 'error_msg' in data:
+                    error_msg = data['error_msg']
+                    print("error_msg: {0}".format(error_msg))
+                    raise FacebookError(**self._get_error_params(data))
+            if self.log_response:
+                print("response data: {0}".format(data))
+        return data
+
+    def take_thread_control(self, recipient_id, message=""):
+        """
+        See  https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
+
+        :param recipient_id: PSID of Faceboook user
+        :param message: String to pass to secondary receiver app
+        :return: 
+
+        """
+        payload = {
+            "recipient": {"id": recipient_id},
+            "metadata": message,
+        }
+        """
+        https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
+
+        @TODO Myabe Use facepy.graph_api.GraphAPI for exceptions handler and other shortcuts,
+              and to have an always update service.. if so `auth_args` will be unuseful
+        """
+        request_endpoint = '{0}/me/take_thread_control'.format(self.graph_url)
+        #=======================================================================
+        # if FACEPY_ENABLED:
+        #     from facepy.graph_api import GraphAPI
+        #     graph = GraphAPI(self.access_token,appsecret=self.app_secret)
+        #     request_data = graph.post(request_endpoint, payload)
+        #=======================================================================
+        request_data = json.dumps(payload, cls=AttrsEncoder)
+        if self.log_request:
+            print("request data to {0}: {1} "
+                  "".format(request_endpoint,
+                            request_data))
+        response = requests.post(
+            request_endpoint,
+            params=self.auth_args,
+            data=json.dumps(payload, cls=AttrsEncoder),
+            headers={'Content-Type': 'application/json'})
+        data = response.json()
+        if self.raise_exception:
+            #ERROR Raise
+            if type(data) is dict:
+                if 'error' in data:
+                    error = data['error']
+                    print("error: {0}".format(error))
+                    if error.get('type') == "OAuthException":
+                        raise OAuthError(**self._get_error_params(data))
+                    else:
+                        raise FacebookError(**self._get_error_params(data))
+                # Facebook occasionally reports errors in its legacy error format.
+                if 'error_msg' in data:
+                    error_msg = data['error_msg']
+                    print("error_msg: {0}".format(error_msg))
+                    raise FacebookError(**self._get_error_params(data))
+            if self.log_response:
+                print("response data: {0}".format(data))
+        return data

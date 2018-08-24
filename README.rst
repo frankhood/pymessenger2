@@ -49,6 +49,13 @@ Configurations:
 -  ``get_configuration()``
 -  ``clear_configuration(**payload)``
 
+Handover Protocol: 
+
+<https://developers.facebook.com/docs/messenger-platform/handover-protocol>
+
+- ``pass_thread_control(recipient_id, target_app_id, help_message)``
+- ``take_thread_control(recipient_id, message)``
+
 You can see the code/documentation for there in
 `bot.py <pymessenger/bot.py>`__.
 
@@ -248,16 +255,65 @@ Output:
         'whitelisted_domains': ["https://www.mywebsite.it",
                                  "https://katesapp.ngrok.io"]}]}
 
+Integration with DialogFlow:
+'''''''''''''''''''''''''''''''''''
+If you want to use DialogFlow for your bot and customize Facebook return messages, you can use our Bot.
+
+.. code:: python
+
+from pymessenger2.bot import Bot
+
+
+class MyDialogFlowWebhook(generic.View):
+  
+    def is_facebook_request(self, request_data):
+        return request_data.get('originalDetectIntentRequest',{}).get('source','') == 'facebook'
+
+    def post(self, request, *args, **kwargs):
+        request_data = json.loads(request.body)
+        logger.debug("DialogFlow Webhook - Handling POST event\n"
+                     "data: {0}".format(data))
+        
+        ...  
+        
+        query_result=request_data.get('queryResult',{})
+        response_data = {
+            'fulfillmentText':query_result.get('fulfillmentText'),
+            'fulfillmentMessages':query_result.get('fulfillmentMessages'),
+            'payload':query_result.get('originalDetectIntentRequest',{}).get('payload',{}),
+            'outputContexts':query_result.get('outputContexts'),
+            'source':"dialogflow-webhook",
+            
+        }
+        
+        ...
+
+        if self.is_facebook_request(request_data):
+            recipient_id = request_data.get('originalDetectIntentRequest',{}).get('payload',{}).get('data',{}).get('sender',{}).get('id',None)
+            dialogflow_action = query_result.get('action', "")
+            if dialogflow_action == "SAY HELLO":
+                chatbot = Bot(<YOUR_PAGE_ACCESS_TOKEN>,
+                              raise_exception=True)
+                facebook_payload = chatbot.send_text_message(recipient_id=recipient_id,
+                                                             message="Hi guy, I'm here!!!",
+                                                             do_send=False)
+                response_data['payload'].update({
+                    "facebook": facebook_payload
+                })
+        return response_data
+
+
 
 Todo
 ~~~~
-
+'''''''''''''''''''''''''''''''''''
 -  Structured Messages
--  Handover Protocol <https://developers.facebook.com/docs/messenger-platform/handover-protocol>
 -  Use Facepy?
 -  Receipt Messages
 -  Airlines
 -  Tests!
+-  More examples
+-  Documentation about handover protocol
 
 Example
 ~~~~~~~
