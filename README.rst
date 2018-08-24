@@ -221,10 +221,10 @@ Output:
 Code: 
 
 
-.. code:: json
+.. code:: python
 
-   {'data': [{
-      'persistent_menu': [{
+   {"data": [{
+      "persistent_menu": [{
           "locale":"default",
           "composer_input_disabled": False,
           "call_to_actions":[
@@ -260,14 +260,14 @@ Code:
             }
           ]
         }],
-        'get_started': {'payload': 'Ciao'}, 
-        'greeting': [
-            {'locale': 'default', 'text': 'Hello!'}, 
-            {'locale': 'en_US', 'text': 'Hi'}, 
-            {'locale': 'it_IT', 'text': 'Ciao'}
+        "get_started": {"payload": "Ciao"}, 
+        "greeting": [
+            {"locale": "default", "text": "Hello!"}, 
+            {"locale": "en_US", "text": "Hi"}, 
+            {"locale": "it_IT", "text": "Ciao"}
         ], 
-        'whitelisted_domains': ["https://www.mywebsite.it",
-                                 "https://katesapp.ngrok.io"]
+        "whitelisted_domains": ["https://www.mywebsite.it",
+                                "https://katesapp.ngrok.io"]
     }]}
 
 Integration with DialogFlow:
@@ -310,11 +310,12 @@ You can see a simple Webhook implementation written in Django
                 recipient_id = request_data.get('originalDetectIntentRequest',{}).get('payload',{}).get('data',{}).get('sender',{}).get('id',None)
                 dialogflow_action = query_result.get('action', "")
                 if dialogflow_action == "SAY HELLO":
-                    chatbot = Bot(<YOUR_PAGE_ACCESS_TOKEN>,
-                                  raise_exception=True)
-                    bot_response_payload = chatbot.send_text_message(recipient_id=recipient_id,
-                                                                 message="Hi guy, I'm here!!!",
-                                                                 do_send=False)
+                    bot = Bot(<YOUR_PAGE_ACCESS_TOKEN>,
+                              raise_exception=True)
+                    bot_response_payload = chatbot.send_text_message(
+                        recipient_id=recipient_id,
+                         message="Hi guy, I'm here!!!",
+                         do_send=False)
                     response_data['payload'].update({
                         "facebook": [
                             bot_response_payload['message']
