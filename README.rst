@@ -49,9 +49,8 @@ Configurations:
 -  ``get_configuration()``
 -  ``clear_configuration(**payload)``
 
-Handover Protocol: 
-
-<https://developers.facebook.com/docs/messenger-platform/handover-protocol>
+Handover Protocol ( `see Facebook Docs <https://developers.facebook.com/docs/messenger-platform/handover-protocol>`_ )
+:
 
 - ``pass_thread_control(recipient_id, target_app_id, help_message)``
 - ``take_thread_control(recipient_id, message)``
@@ -205,12 +204,27 @@ ChatBot Configuration:
                                       
 Output:
 
-.. figure:: https://user-images.githubusercontent.com/2088831/41346006-895817ee-6f05-11e8-9048-f9a06df3f727.png
-   :alt: Persistent Menu
-.. figure:: https://user-images.githubusercontent.com/2088831/41345991-8111431c-6f05-11e8-9d09-40df3a2a60be.png
-   :alt: Persistent Menu
 
-   {'data': [{'persistent_menu': [{
+
+.. figure:: https://user-images.githubusercontent.com/2088831/41345991-8111431c-6f05-11e8-9d09-40df3a2a60be.png
+   :alt: Persistent Menu (Level 1)
+   
+   Persistent Menu (Level 1)
+
+ 
+.. figure:: https://user-images.githubusercontent.com/2088831/41346006-895817ee-6f05-11e8-9048-f9a06df3f727.png
+   :alt: Persistent Menu (Level 2)
+
+   Persistent Menu (Level 1)
+
+
+Code: 
+
+
+.. code:: json
+
+   {'data': [{
+      'persistent_menu': [{
           "locale":"default",
           "composer_input_disabled": False,
           "call_to_actions":[
@@ -253,62 +267,65 @@ Output:
             {'locale': 'it_IT', 'text': 'Ciao'}
         ], 
         'whitelisted_domains': ["https://www.mywebsite.it",
-                                 "https://katesapp.ngrok.io"]}]}
+                                 "https://katesapp.ngrok.io"]
+    }]}
 
 Integration with DialogFlow:
 '''''''''''''''''''''''''''''''''''
 If you want to use DialogFlow for your bot and customize Facebook return messages, you can use our Bot.
 
+You can see a simple Webhook implementation written in Django
+
 .. code:: python
 
-from pymessenger2.bot import Bot
+    from pymessenger2.bot import Bot
+    
+    ...
 
-
-class MyDialogFlowWebhook(generic.View):
+    class MyDialogFlowWebhook(generic.View):
   
-    def is_facebook_request(self, request_data):
-        return request_data.get('originalDetectIntentRequest',{}).get('source','') == 'facebook'
+        def is_facebook_request(self, request_data):
+            return request_data.get('originalDetectIntentRequest',{}).get('source','') == 'facebook'
 
-    def post(self, request, *args, **kwargs):
-        request_data = json.loads(request.body)
-        logger.debug("DialogFlow Webhook - Handling POST event\n"
-                     "data: {0}".format(data))
-        
-        ...  
-        
-        query_result=request_data.get('queryResult',{})
-        response_data = {
-            'fulfillmentText':query_result.get('fulfillmentText'),
-            'fulfillmentMessages':query_result.get('fulfillmentMessages'),
-            'payload':query_result.get('originalDetectIntentRequest',{}).get('payload',{}),
-            'outputContexts':query_result.get('outputContexts'),
-            'source':"dialogflow-webhook",
+        def post(self, request, *args, **kwargs):
+            request_data = json.loads(request.body)
+            logger.debug("DialogFlow Webhook - Handling POST event\n"
+                         "data: {0}".format(data))
             
-        }
-        
-        ...
+            ...  
+            
+            query_result=request_data.get('queryResult',{})
+            response_data = {
+                'fulfillmentText':query_result.get('fulfillmentText'),
+                'fulfillmentMessages':query_result.get('fulfillmentMessages'),
+                'payload':query_result.get('originalDetectIntentRequest',{}).get('payload',{}),
+                'outputContexts':query_result.get('outputContexts'),
+                'source':"dialogflow-webhook",
+                
+            }
+            
+            ...
 
-        if self.is_facebook_request(request_data):
-            recipient_id = request_data.get('originalDetectIntentRequest',{}).get('payload',{}).get('data',{}).get('sender',{}).get('id',None)
-            dialogflow_action = query_result.get('action', "")
-            if dialogflow_action == "SAY HELLO":
-                chatbot = Bot(<YOUR_PAGE_ACCESS_TOKEN>,
-                              raise_exception=True)
-                bot_response_payload = chatbot.send_text_message(recipient_id=recipient_id,
-                                                             message="Hi guy, I'm here!!!",
-                                                             do_send=False)
-                response_data['payload'].update({
-                    "facebook": [
-                        bot_response_payload['message']
-                    ]
-                })
-        return response_data
+            if self.is_facebook_request(request_data):
+                recipient_id = request_data.get('originalDetectIntentRequest',{}).get('payload',{}).get('data',{}).get('sender',{}).get('id',None)
+                dialogflow_action = query_result.get('action', "")
+                if dialogflow_action == "SAY HELLO":
+                    chatbot = Bot(<YOUR_PAGE_ACCESS_TOKEN>,
+                                  raise_exception=True)
+                    bot_response_payload = chatbot.send_text_message(recipient_id=recipient_id,
+                                                                 message="Hi guy, I'm here!!!",
+                                                                 do_send=False)
+                    response_data['payload'].update({
+                        "facebook": [
+                            bot_response_payload['message']
+                        ]
+                    })
+            return response_data
 
 
 
 Todo
 ~~~~
-'''''''''''''''''''''''''''''''''''
 -  Structured Messages
 -  Use Facepy?
 -  Receipt Messages
