@@ -294,11 +294,13 @@ class MyDialogFlowWebhook(generic.View):
             if dialogflow_action == "SAY HELLO":
                 chatbot = Bot(<YOUR_PAGE_ACCESS_TOKEN>,
                               raise_exception=True)
-                facebook_payload = chatbot.send_text_message(recipient_id=recipient_id,
+                bot_response_payload = chatbot.send_text_message(recipient_id=recipient_id,
                                                              message="Hi guy, I'm here!!!",
                                                              do_send=False)
                 response_data['payload'].update({
-                    "facebook": facebook_payload
+                    "facebook": [
+                        bot_response_payload['message']
+                    ]
                 })
         return response_data
 
