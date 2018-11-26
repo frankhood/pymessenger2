@@ -341,7 +341,7 @@ class Bot(object):
             Response from API as <dict>
         """
         return self.send_message(recipient_id, {
-                'text': message,
+                'text': str(message),
                 'quick_replies': buttons
                 }, notification_type, do_send=do_send)
     
