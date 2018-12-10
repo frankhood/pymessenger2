@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+import logging
 
 import six
 import json
@@ -10,6 +11,7 @@ from pymessenger2 import utils
 from pymessenger2.exceptions import OAuthError, FacebookError 
 from pymessenger2.utils import AttrsEncoder
 
+logger = logging.getLogger("pymessenger")
 
 DEFAULT_API_VERSION = 2.6
 
@@ -129,12 +131,18 @@ class Bot(object):
         https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api
         """
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
+        logger.debug("request_endpoint : {0}".format(request_endpoint))
+        logger.debug("params : {0}".format(payload))
         response = requests.post(
             request_endpoint,
             params=self.auth_args,
             json=payload
         )
         result = response.json()
+        error = result.get('error',{})
+        if error:
+            logger.error("{0}".format(error.get("message",'Facebook Error')))
+        logger.debug("result : {0}".format(result))
         return result
     
     def get_configuration(self, fields=[]):
@@ -150,8 +158,8 @@ class Bot(object):
             'fields':",".join(list(fields))
         })
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
-        print("request_endpoint : {0}".format(request_endpoint))
-        print("params : {0}".format(params))
+        logger.debug("request_endpoint : {0}".format(request_endpoint))
+        logger.debug("params : {0}".format(params))
         response = requests.get(
             request_endpoint,
             params=self.auth_args,
