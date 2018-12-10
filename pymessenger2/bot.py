@@ -131,8 +131,9 @@ class Bot(object):
         https://developers.facebook.com/docs/messenger-platform/reference/messenger-profile-api
         """
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
-        logger.debug("request_endpoint : {0}".format(request_endpoint))
-        logger.debug("params : {0}".format(payload))
+        if self.log_request:
+            print("request_endpoint : {0}".format(request_endpoint))
+            print("params : {0}".format(payload))
         response = requests.post(
             request_endpoint,
             params=self.auth_args,
@@ -141,8 +142,9 @@ class Bot(object):
         result = response.json()
         error = result.get('error',{})
         if error:
-            logger.error("{0}".format(error.get("message",'Facebook Error')))
-        logger.debug("result : {0}".format(result))
+            print("Error! : {0}".format(error.get("message",'Facebook Error')))
+        if self.log_response:
+            print("result : {0}".format(result))
         return result
     
     def get_configuration(self, fields=[]):
@@ -158,8 +160,9 @@ class Bot(object):
             'fields':",".join(list(fields))
         })
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
-        logger.debug("request_endpoint : {0}".format(request_endpoint))
-        logger.debug("params : {0}".format(params))
+        if self.log_request:
+            print("request_endpoint : {0}".format(request_endpoint))
+            print("params : {0}".format(params))
         response = requests.get(
             request_endpoint,
             params=self.auth_args,
