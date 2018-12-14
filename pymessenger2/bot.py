@@ -603,7 +603,7 @@ class Bot(object):
         :param recipient_id: PSID of Faceboook user
         :param target_app_id: Facebook APP ID
         :param help_message: String to pass to secondary receiver app
-        :return:
+        :return: json response
 
         """
         payload = {
@@ -612,9 +612,7 @@ class Bot(object):
             "metadata": help_message,
         }
         """
-        https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
-
-        @TODO Myabe Use facepy.graph_api.GraphAPI for exceptions handler and other shortcuts,
+        @TODO Maybe Use facepy.graph_api.GraphAPI for exceptions handler and other shortcuts,
               and to have an always update service.. if so `auth_args` will be unuseful
         """
         request_endpoint = '{0}/me/pass_thread_control'.format(self.graph_url)
@@ -656,11 +654,11 @@ class Bot(object):
 
     def take_thread_control(self, recipient_id, message=""):
         """
-        See  https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
+        See  https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/take-thread-control
 
         :param recipient_id: PSID of Faceboook user
         :param message: String to pass to secondary receiver app
-        :return: 
+        :return:  json response
 
         """
         payload = {
@@ -668,8 +666,6 @@ class Bot(object):
             "metadata": message,
         }
         """
-        https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
-
         @TODO Myabe Use facepy.graph_api.GraphAPI for exceptions handler and other shortcuts,
               and to have an always update service.. if so `auth_args` will be unuseful
         """
