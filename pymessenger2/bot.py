@@ -595,7 +595,7 @@ class Bot(object):
     ###  HANDOVER PROTOCOL
     ##########################
     def pass_thread_control(self, recipient_id,
-                            target_app_id=263902037430900,  # Page inbox
+                            target_app_id="",  # Page inbox
                             help_message="Pass to Secondary Receiver"):
         """
         See  https://developers.facebook.com/docs/messenger-platform/reference/handover-protocol/pass-thread-control
