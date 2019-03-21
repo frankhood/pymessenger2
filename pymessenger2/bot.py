@@ -132,8 +132,10 @@ class Bot(object):
         """
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
         if self.log_request:
-            print("request_endpoint : {0}".format(request_endpoint))
-            print("params : {0}".format(payload))
+            print("request to {0}: \n headers :{1}\n data: {2} "
+                  "".format(request_endpoint,
+                            self.auth_args,
+                            request_data))
         response = requests.post(
             request_endpoint,
             params=self.auth_args,
@@ -161,11 +163,13 @@ class Bot(object):
         })
         request_endpoint = '{0}/me/messenger_profile'.format(self.graph_url)
         if self.log_request:
-            print("request_endpoint : {0}".format(request_endpoint))
-            print("params : {0}".format(params))
+            print("request to {0}: \n headers :{1}\n data: {2} "
+                  "".format(request_endpoint,
+                            self.auth_args,
+                            request_data))
         response = requests.get(
             request_endpoint,
-            params=self.auth_args,
+            params=params,
             #json=payload
         )
         result = response.json()
@@ -558,8 +562,9 @@ class Bot(object):
         #=======================================================================
         request_data = json.dumps(payload, cls=AttrsEncoder)
         if self.log_request:
-            print("request data to {0}: {1} "
+            print("request to {0}: \n headers :{1}\n data: {2} "
                   "".format(request_endpoint,
+                            self.auth_args,
                             request_data))
         response = requests.post(
             request_endpoint,
@@ -624,8 +629,9 @@ class Bot(object):
         #=======================================================================
         request_data = json.dumps(payload, cls=AttrsEncoder)
         if self.log_request:
-            print("request data to {0}: {1} "
+            print("request to {0}: \n headers :{1}\n data: {2} "
                   "".format(request_endpoint,
+                            self.auth_args,
                             request_data))
         response = requests.post(
             request_endpoint,
@@ -678,8 +684,9 @@ class Bot(object):
         #=======================================================================
         request_data = json.dumps(payload, cls=AttrsEncoder)
         if self.log_request:
-            print("request data to {0}: {1} "
+            print("request to {0}: \n headers :{1}\n data: {2} "
                   "".format(request_endpoint,
+                            self.auth_args,
                             request_data))
         response = requests.post(
             request_endpoint,
